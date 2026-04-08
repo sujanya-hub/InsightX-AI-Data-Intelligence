@@ -1,0 +1,12 @@
+streamlit
+requests
+pandas
+numpy
+anthropic
+chardet
+matplotlib
+seaborn
+reportlab
+scikit-learn
+statsmodels
+plotly
