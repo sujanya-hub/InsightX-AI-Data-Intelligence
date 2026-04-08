@@ -19,6 +19,7 @@ All business logic lives in modules/.  This file is a pure controller.
 
 from __future__ import annotations
 
+import os                   # ← added for os.getenv
 import streamlit as st
 
 # ---------------------------------------------------------------------------
@@ -203,7 +204,7 @@ def _init_session_state() -> None:
             st.session_state[key] = value
 
 # ---------------------------------------------------------------------------
-# AI Engine
+# AI Engine  ← ONLY THIS FUNCTION WAS CHANGED
 # ---------------------------------------------------------------------------
 
 @st.cache_resource(show_spinner=False)
@@ -211,15 +212,25 @@ def _init_ai_engine() -> AIEngine | None:
     """
     Construct the AIEngine exactly once and cache it for the server lifetime.
 
-    Reads GROQ_API_KEY from Streamlit secrets.  Returns None gracefully if
-    the key is absent or construction fails, so AI-dependent features degrade
-    rather than crash.
+    Resolution order for GROQ_API_KEY:
+      1. os.getenv()      — works on Render (environment variables)
+      2. st.secrets.get() — works locally  (secrets.toml)
+    Returns None gracefully if the key is absent or construction fails,
+    so AI-dependent features degrade rather than crash.
     """
     try:
-        api_key: str | None = st.secrets.get("GROQ_API_KEY")
+        api_key: str | None = os.getenv("GROQ_API_KEY", "").strip() or None
+
         if not api_key:
-            st.warning("GROQ_API_KEY not set in secrets.toml — AI features disabled.")
+            try:
+                api_key = st.secrets.get("GROQ_API_KEY")
+            except Exception:
+                pass
+
+        if not api_key:
+            st.warning("GROQ_API_KEY not set — AI features disabled.")
             return None
+
         return AIEngine(api_key=api_key)
     except Exception as exc:
         st.warning(f"AI Engine could not be initialised: {exc}")

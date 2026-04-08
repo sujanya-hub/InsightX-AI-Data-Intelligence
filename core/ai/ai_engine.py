@@ -1,28 +1,26 @@
 from __future__ import annotations
 
 import json
-import time
 import os
 from typing import Any
 
 import requests
-import streamlit as st
 
 
 # ─────────────────────────────────────────────────────────────
-# Safe serialization (unchanged, but cleaned)
+# Safe serialization
 # ─────────────────────────────────────────────────────────────
 def _safe_serialise(obj: Any, max_chars: int = 4000) -> str:
     def _default(o: Any) -> Any:
         try:
             import numpy as np
-            if isinstance(o, (np.integer,)):
+            if isinstance(o, np.integer):
                 return int(o)
-            if isinstance(o, (np.floating,)):
+            if isinstance(o, np.floating):
                 return float(o)
-            if isinstance(o, (np.ndarray,)):
+            if isinstance(o, np.ndarray):
                 return o.tolist()
-            if isinstance(o, (np.bool_,)):
+            if isinstance(o, np.bool_):
                 return bool(o)
         except ImportError:
             pass
@@ -50,58 +48,73 @@ def _safe_serialise(obj: Any, max_chars: int = 4000) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
+# Key resolver — never imports streamlit at module level
+# ─────────────────────────────────────────────────────────────
+def _resolve_api_key(api_key: str | None) -> str:
+    """
+    Resolution order (first non-empty value wins):
+      1. Explicitly passed api_key argument
+      2. GROQ_API_KEY environment variable   ← works on Render
+      3. st.secrets["GROQ_API_KEY"]          ← works locally
+    Returns "" if nothing is found; never raises.
+    """
+    if api_key:
+        return api_key.strip()
+
+    env_key = os.getenv("GROQ_API_KEY", "").strip()
+    if env_key:
+        return env_key
+
+    # Attempt Streamlit secrets — may not exist on Render
+    try:
+        import streamlit as st
+        secret = st.secrets.get("GROQ_API_KEY", "")
+        if secret:
+            return secret.strip()
+    except Exception:
+        pass  # secrets.toml absent — totally fine on Render
+
+    return ""
+
+
+# ─────────────────────────────────────────────────────────────
 # AI ENGINE
 # ─────────────────────────────────────────────────────────────
 class AIEngine:
-    _BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
-    _MODEL = "llama-3.1-8b-instant"
-    _TIMEOUT = 30
+    _BASE_URL   = "https://api.groq.com/openai/v1/chat/completions"
+    _MODEL      = "llama-3.1-8b-instant"
+    _TIMEOUT    = 30
     _MAX_TOKENS = 300
     _TEMPERATURE = 0.7
 
     def __init__(self, api_key: str | None = None, model: str | None = None):
-        """
-        Automatically loads API key from:
-        1. Passed parameter
-        2. Streamlit secrets
-        3. Environment variables (Render)
-        """
-
-        self._api_key = (
-            api_key
-            or st.secrets.get("GROQ_API_KEY", None)
-            or os.getenv("GROQ_API_KEY", "")
-        ).strip()
+        self._api_key = _resolve_api_key(api_key)
 
         if not self._api_key:
             raise ValueError(
-                "GROQ_API_KEY is missing. "
-                "Set it in Streamlit secrets or Render environment variables."
+                "GROQ_API_KEY not found. "
+                "Set it as a Render environment variable or in .streamlit/secrets.toml."
             )
 
         self.model = model or self._MODEL
-
         self._headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
 
     # ─────────────────────────────────────────────────────────────
-    # Public methods
+    # Public API
     # ─────────────────────────────────────────────────────────────
 
     def generate(self, prompt: str) -> str:
-        return self._complete(
-            [{"role": "user", "content": prompt}]
-        )
+        return self._complete([{"role": "user", "content": prompt}])
 
     def explain_quality(self, metrics: dict) -> str:
-        safe = _safe_serialise(metrics)
         prompt = f"""
 You are a senior data quality analyst.
 
 Dataset metrics:
-{safe}
+{_safe_serialise(metrics)}
 
 Explain:
 - Overall quality
@@ -111,40 +124,34 @@ Explain:
         return self.generate(prompt)
 
     def explain_suitability(self, results: dict) -> str:
-        safe = _safe_serialise(results)
         prompt = f"""
 You are a data science advisor.
 
 Dataset suitability:
-{safe}
+{_safe_serialise(results)}
 
 Explain readiness for ML and next steps.
 """
         return self.generate(prompt)
 
     def generate_cleaning_summary(self, before: dict, after: dict) -> str:
-        b = _safe_serialise(before, 1500)
-        a = _safe_serialise(after, 1500)
-
         prompt = f"""
 Before cleaning:
-{b}
+{_safe_serialise(before, 1500)}
 
 After cleaning:
-{a}
+{_safe_serialise(after, 1500)}
 
 Explain improvements and remaining issues.
 """
         return self.generate(prompt)
 
     def generate_executive_summary(self, context: dict) -> str:
-        safe = _safe_serialise(context)
-
         prompt = f"""
 You are a business analyst.
 
 Context:
-{safe}
+{_safe_serialise(context)}
 
 Give executive summary with:
 - key insights
@@ -157,11 +164,10 @@ Give executive summary with:
     # Core API call
     # ─────────────────────────────────────────────────────────────
     def _complete(self, messages: list[dict]) -> str:
-
         payload = {
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": self._MAX_TOKENS,
+            "model":       self.model,
+            "messages":    messages,
+            "max_tokens":  self._MAX_TOKENS,
             "temperature": self._TEMPERATURE,
         }
 
@@ -179,7 +185,6 @@ Give executive summary with:
             return f"API Error {response.status_code}: {response.text}"
 
         try:
-            data = response.json()
-            return data["choices"][0]["message"]["content"].strip()
+            return response.json()["choices"][0]["message"]["content"].strip()
         except Exception:
             return "Invalid response from AI model."
