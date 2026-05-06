@@ -50,24 +50,6 @@ The project focuses on combining deterministic analytics with LLM-assisted expla
 
 ---
 
-## Preview
-
-### Data Quality & Profiling Dashboard
-
-Automated profiling, quality scoring, missing value analysis, and dataset health evaluation.
-
-![Quality Dashboard](assets/data-quality-dashboard.png)
-
----
-
-### AI-Powered Analytics Copilot
-
-LLM-assisted insight generation using structured statistical context and Groq inference.
-
-![AI Copilot](assets/ai-copilot.png)
-
----
-
 ### Executive Reporting Interface
 
 Automated visual summaries and PDF-ready analytical reporting workflows.
