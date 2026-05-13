@@ -166,18 +166,27 @@ streamlit run app.py
 
 ## Project Structure
 
-```
 InsightX/
-├── app.py                  # Streamlit frontend
+│
+├── assets/
+│   ├── data-quality-dashboard.png
+│   ├── ai-copilot.png
+│   └── reporting-dashboard.png
+│
+├── core/
+│   ├── ingestion/
+│   ├── cleaning/
+│   ├── profiling/
+│   ├── analytics/
+│   ├── ai/
+│   └── reporting/
+│
 ├── modules/
-│   ├── profiler.py         # EDA & statistical analysis
-│   ├── llm_interpreter.py  # Groq prompt templates & API calls
-│   └── pdf_generator.py    # ReportLab report assembly
+├── utils/
+├── app.py
 ├── requirements.txt
-└── .env.example
+└── README.md
 ```
-
----
 
 ## Live Deployment
 
