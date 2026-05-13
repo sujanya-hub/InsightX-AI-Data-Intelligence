@@ -175,7 +175,7 @@ InsightX/
 
 | Service | URL |
 |---------|-----|
-|**Live App** | [insightx-ai-data-intelligence.onrender.com](https://insightx-ai-data-intelligence.onrender.com) |
+| **Live App** | [insightx-ai-data-intelligence.onrender.com](https://insightx-ai-data-intelligence.onrender.com) |
 
 > *Render free-tier has ~7s cold-start on first request. Pipeline runs fast after warmup.*
 
