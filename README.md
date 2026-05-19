@@ -31,6 +31,49 @@
 InsightX is a **production-deployed analytics automation platform** that transforms raw datasets into executive-ready intelligence reports — automatically. Upload a CSV, and InsightX runs full EDA, generates LLM-written analytical narratives via Groq, and exports a formatted PDF report — all within milliseconds.
 
 No dashboards to build. No manual analysis. No interpretation overhead.
+---
+
+## Screenshots
+
+### Data Readiness Pipeline
+
+![Pipeline Dashboard](assets/pipeline-dashboard.png)
+
+---
+
+### Data Quality & Cleaning Intelligence
+
+![Quality Dashboard](assets/quality-dashboard.png)
+
+---
+
+### AI Feature Engineering & Statistical Analysis
+
+![Feature Engineering](assets/feature-engineering.png)
+
+---
+
+### AI Copilot Insights
+
+![AI Copilot](assets/ai-copilot.png)
+
+---
+
+### Executive Analytics Dashboard
+
+![Executive Dashboard](assets/executive-dashboard.png)
+
+---
+
+### Forecasting & Decision Lab
+
+![Forecasting Lab](assets/forecasting-lab.png)
+
+---
+
+### Driver & Correlation Analysis
+
+![Driver Analysis](assets/driver-analysis.png)
 
 ---
 
