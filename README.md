@@ -41,18 +41,6 @@ No dashboards to build. No manual analysis. No interpretation overhead.
 
 ---
 
-### Data Quality & Cleaning Intelligence
-
-![Quality Dashboard](assets/quality-dashboard.png)
-
----
-
-### AI Feature Engineering & Statistical Analysis
-
-![Feature Engineering](assets/feature-engineering.png)
-
----
-
 ### AI Copilot Insights
 
 ![AI Copilot](assets/ai-copilot.png)
